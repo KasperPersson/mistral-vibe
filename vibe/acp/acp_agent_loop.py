@@ -178,7 +178,7 @@ class VibeAcpAgentLoop(AcpAgent):
         mcp_servers: list[HttpMcpServer | SseMcpServer | McpServerStdio] | None = None,
         **kwargs: Any,
     ) -> NewSessionResponse:
-        load_dotenv_values()
+        load_dotenv_values(env_path=None)  # Use local .env if available, then global
         os.chdir(cwd)
 
         try:

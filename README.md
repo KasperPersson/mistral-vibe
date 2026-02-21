@@ -372,15 +372,26 @@ Vibe supports multiple ways to configure your API keys:
    export MISTRAL_API_KEY="your_mistral_api_key"
    ```
 
-3. **`.env` File**: Create a `.env` file in `~/.vibe/` and add your API keys:
+3. **`.env` File**: Create a `.env` file in `~/.vibe/` or in your project directory and add your API keys:
 
+   **Local .env file (project-specific, highest priority):**
    ```bash
    MISTRAL_API_KEY=your_mistral_api_key
    ```
 
-   Vibe automatically loads API keys from `~/.vibe/.env` on startup. Environment variables take precedence over the `.env` file if both are set.
+   **Global .env file (fallback):**
+   ```bash
+   MISTRAL_API_KEY=your_mistral_api_key
+   ```
 
-**Note**: The `.env` file is specifically for API keys and other provider credentials. General Vibe configuration should be done in `config.toml`.
+   Vibe automatically loads API keys with the following priority:
+   1. Environment variables (highest priority)
+   2. Local `.env` file in your project directory (if in a trusted folder)
+   3. Global `.env` file in `~/.vibe/` (lowest priority)
+   
+   **Note**: The `.env` file is specifically for API keys and other provider credentials. General Vibe configuration should be done in `config.toml`.
+   
+   **Security**: Never commit your `.env` file with real API keys! The `.env` file is already in `.gitignore` for security. Use `.env-example` as a template.
 
 ### Custom System Prompts
 

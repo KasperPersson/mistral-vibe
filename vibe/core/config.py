@@ -31,9 +31,43 @@ from vibe.core.tools.base import BaseToolConfig
 
 
 def load_dotenv_values(
-    env_path: Path = GLOBAL_ENV_FILE.path,
+    env_path: Path | None = None,
     environ: MutableMapping[str, str] = os.environ,
 ) -> None:
+    """Load environment variables from .env file.
+    
+    Args:
+        env_path: Specific .env file path to load. If None, uses local .env (if available) then global .env.
+        environ: Environment mapping to update (defaults to os.environ).
+    """
+    from vibe.core.paths.config_paths import _resolve_local_env_path
+    
+    # Determine which .env files to load
+    if env_path is None:
+        # Load local .env first (highest priority) - override existing values
+        local_env_path = _resolve_local_env_path()
+        _load_dotenv_from_path(local_env_path, environ, override_existing=True)
+        
+        # Load global .env second (lower priority, doesn't override local)
+        if local_env_path != GLOBAL_ENV_FILE.path:
+            _load_dotenv_from_path(GLOBAL_ENV_FILE.path, environ, override_existing=False)
+    else:
+        # Load specific .env file (for backward compatibility and testing) - override existing values
+        _load_dotenv_from_path(env_path, environ, override_existing=True)
+
+
+def _load_dotenv_from_path(
+    env_path: Path,
+    environ: MutableMapping[str, str],
+    override_existing: bool = True
+) -> None:
+    """Internal helper to load .env file from specific path.
+    
+    Args:
+        env_path: Path to .env file to load
+        environ: Environment mapping to update
+        override_existing: If True, override existing values. If False, only set missing values.
+    """
     # We allow FIFO path to support some environment management solutions (e.g. https://developer.1password.com/docs/environments/local-env-file/)
     if not env_path.is_file() and not env_path.is_fifo():
         return
@@ -42,7 +76,9 @@ def load_dotenv_values(
     for key, value in env_vars.items():
         if not value:
             continue
-        environ.update({key: value})
+        # Only set if not already set (preserves higher priority sources) or if override is enabled
+        if override_existing or key not in environ:
+            environ[key] = value
 
 
 class MissingAPIKeyError(RuntimeError):
