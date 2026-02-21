@@ -122,7 +122,7 @@ def _load_messages_from_previous_session(
 
 
 def run_cli(args: argparse.Namespace) -> None:
-    load_dotenv_values()
+    load_dotenv_values(env_path=None)  # Use local .env if available, then global
     bootstrap_config_files()
 
     if args.setup:

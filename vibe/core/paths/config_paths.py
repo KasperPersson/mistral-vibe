@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-from vibe.core.paths.global_paths import VIBE_HOME, GlobalPath
+from vibe.core.paths.global_paths import GLOBAL_ENV_FILE, VIBE_HOME, GlobalPath
 from vibe.core.trusted_folders import trusted_folders_manager
 
 _config_paths_locked: bool = True
@@ -53,6 +53,16 @@ def resolve_local_agents_dir(dir: Path) -> Path | None:
     if (candidate := dir / ".vibe" / "agents").is_dir():
         return candidate
     return None
+
+
+def _resolve_local_env_path() -> Path:
+    """Resolve the local .env file path, falling back to global if not available."""
+    cwd = Path.cwd()
+    if trusted_folders_manager.is_trusted(cwd):
+        local_env = cwd / ".env"
+        if local_env.is_file():
+            return local_env
+    return GLOBAL_ENV_FILE.path
 
 
 def unlock_config_paths() -> None:
